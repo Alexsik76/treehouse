@@ -32,22 +32,29 @@ export const useInfrastructureItem = (id: number) => {
 
 export const createInfrastructureItem = async (item: Partial<InfrastructureItem>): Promise<InfrastructureItem> => {
     const url = getUrl("/infrastructure/");
-    const { data, error } = await useFetch(url)
+    const { data, error, response } = await useFetch(url)
         .post(item)
         .json<InfrastructureItem>();
 
-    if (error.value) {
-        // Parse error similar to before
+    if (error.value || !response.value?.ok) {
         let errorMessage = `Failed to create item`;
-        const errorData = data.value as any;
-        if (errorData?.detail) {
-             if (Array.isArray(errorData.detail)) {
-                 errorMessage = errorData.detail.map((e: any) => e.msg).join(", ");
-             } else {
-                 errorMessage = errorData.detail;
-             }
-         }
-         throw new Error(errorMessage);
+        // Try to parse error details from response body
+        try {
+            const errorBody = await response.value?.json();
+            if (errorBody?.detail) {
+                if (Array.isArray(errorBody.detail)) {
+                    errorMessage = errorBody.detail.map((e: any) => e.msg).join(", ");
+                } else {
+                    errorMessage = errorBody.detail;
+                }
+            }
+        } catch {
+            // If JSON parsing fails, use the error value if available
+            if (error.value) {
+                errorMessage = String(error.value);
+            }
+        }
+        throw new Error(errorMessage);
     }
     return data.value!;
 };
@@ -63,18 +70,24 @@ export const deleteInfrastructureItem = async (id: number): Promise<void> => {
 
 export const updateInfrastructureItem = async (id: number, item: Partial<InfrastructureItem>): Promise<InfrastructureItem> => {
     const url = getUrl(`/infrastructure/${id}`);
-    const { data, error } = await useFetch(url)
+    const { data, error, response } = await useFetch(url)
         .put(item)
         .json<InfrastructureItem>();
 
-    if (error.value) {
+    if (error.value || !response.value?.ok) {
         let errorMessage = `Failed to update item`;
-        const errorData = data.value as any;
-        if (errorData?.detail) {
-            if (Array.isArray(errorData.detail)) {
-                errorMessage = errorData.detail.map((e: any) => e.msg).join(", ");
-            } else {
-                errorMessage = errorData.detail;
+        try {
+            const errorBody = await response.value?.json();
+            if (errorBody?.detail) {
+                if (Array.isArray(errorBody.detail)) {
+                    errorMessage = errorBody.detail.map((e: any) => e.msg).join(", ");
+                } else {
+                    errorMessage = errorBody.detail;
+                }
+            }
+        } catch {
+            if (error.value) {
+                errorMessage = String(error.value);
             }
         }
         throw new Error(errorMessage);

@@ -113,9 +113,6 @@ async def read_infrastructure_items(
         logger.error(f"Error fetching items: {e}")
         # Return error as detail for debugging
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-        logger.error(f"Error fetching items: {e}")
-        # Return error as detail for debugging
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 
 @router.get("/{item_id}", response_model=InfrastructureItemResponse)

@@ -86,27 +86,6 @@ const save = async () => {
   }
   error.value = null;
   localItem.value.parent_id = props.parentId || null;
-
-  // We can't easily wait for the parent's async operation unless we change the emit signature
-  // or pass a callback. Or catch the error here if the parent throws.
-  // But standard Vue emit is sync. The parent `handleSaveItem` is async.
-  // Better approach: Let parent handling logic exist, but parent should pass 'error' prop back?
-  // Or: Pass a callback 'onSave' prop instead of emitting event?
-  // OR: Emit 'save' and let parent handle it. But to show error inside dialog, we need the error back.
-
-  // Simplest fix for now given 'emit':
-  // We cannot block closing here easily without changing architecture.
-  // Actually, 'handleSaveItem' sets dialogOpen=false.
-  // If we want to keep dialog open on error, the parent must NOT close it on error.
-  // Parent `handleSaveItem`:
-  // try { await ...; dialogOpen.value = false; } catch (e) { alert(...) }
-  // The user says "no error message, window disappears" -> Wait, user said "window disappears" on success?
-  // "If in address no error, window disappears" -> Correct.
-  // "If address error 10 - no error message, server not created".
-  // This implies the dialog MIGHT stay open but no message? Or closes?
-  // If backend returns 422, `api.ts` throws. Parent catches. Alert shows.
-  // If alert didn't show, maybe `api.ts` didn't throw properly?
-
   emit("save", { ...localItem.value });
 };
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { InfrastructureItem } from "@/types/infrastructure";
 
-const props = defineProps<{
+defineProps<{
   items: InfrastructureItem[];
 }>();
 
