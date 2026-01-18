@@ -41,7 +41,7 @@ services:
   #   ports:
   #     - "8000:8000"
 
-  Vue.js Frontend (served by Nginx)
+  # Vue.js Frontend (served by Nginx)
   frontend:
     build:
       context: ./frontend
