@@ -1,4 +1,5 @@
 services:
+  # PostgreSQL Database
   db:
     image: postgres:16-alpine
     container_name: treehouse_db
@@ -8,16 +9,50 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: treehouse
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${DB_NAME}
     networks:
       - treehouse_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d treehouse"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    pull_policy: never
+    container_name: treehouse_backend
+    restart: always
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - treehouse_net
+    expose:
+      - "8000"
+
+  # Vue.js Frontend (served by Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    pull_policy: never
+    container_name: treehouse_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - treehouse_net
 
 volumes:
   db_data:
