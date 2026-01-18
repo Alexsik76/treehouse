@@ -1,27 +1,29 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
-const message = ref<string>('Connecting...')
-const status = ref<string>('gray')
+const message = ref<string>("Connecting...");
+const status = ref<string>("gray");
 
 // Функція для перевірки зв'язку з бекендом
 const checkBackend = async () => {
   try {
     // Звертаємось до локального FastAPI (порт 8000)
-    const response = await fetch('http://localhost:8000/')
-    const data = await response.json()
-    message.value = data.message // "Welcome to the Treehouse API"
-    status.value = 'success'
+    const response = await fetch(
+      import.meta.env.VITE_API_URL || "http://localhost:8000/",
+    );
+    const data = await response.json();
+    message.value = data.message; // "Welcome to the Treehouse API"
+    status.value = "success";
   } catch (error) {
-    message.value = 'Error: Backend unavailable'
-    status.value = 'error'
-    console.error(error)
+    message.value = "Error: Backend unavailable";
+    status.value = "error";
+    console.error(error);
   }
-}
+};
 
 onMounted(() => {
-  checkBackend()
-})
+  checkBackend();
+});
 </script>
 
 <template>
@@ -40,7 +42,9 @@ onMounted(() => {
             <div class="text-h6 mb-2">Backend Response:</div>
             <v-alert
               :color="status === 'success' ? 'success' : 'error'"
-              :icon="status === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'"
+              :icon="
+                status === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'
+              "
               variant="tonal"
             >
               {{ message }}
