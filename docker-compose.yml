@@ -27,6 +27,10 @@ services:
     container_name: treehouse_backend
     restart: always
     environment:
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: db
       DATABASE_URL: postgresql+asyncpg://${DB_USER}:${DB_PASS}@db:5432/${DB_NAME}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
     depends_on:
@@ -34,8 +38,8 @@ services:
         condition: service_healthy
     networks:
       - treehouse_net
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
 
   # Vue.js Frontend (served by Nginx)
   frontend:

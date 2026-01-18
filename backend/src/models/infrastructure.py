@@ -1,6 +1,7 @@
 import enum
 from typing import List, Optional
 
+from sqlalchemy import Enum as SAEnum
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -20,7 +21,10 @@ class InfrastructureItem(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, index=True)
-    type: Mapped[InfrastructureType] = mapped_column(String, nullable=False)
+    type: Mapped[InfrastructureType] = mapped_column(
+        SAEnum(InfrastructureType, native_enum=False), 
+        nullable=False
+    )
     # Using String for IP for simplicity, though INET is better for Postgres
     ip_address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     dns_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
