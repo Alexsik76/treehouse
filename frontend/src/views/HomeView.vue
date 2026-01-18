@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
 import {
-  fetchInfrastructure,
+  useInfrastructure,
   createInfrastructureItem,
   updateInfrastructureItem,
   deleteInfrastructureItem,
@@ -14,9 +14,13 @@ import InfrastructureTree from "@/components/InfrastructureTree.vue";
 import ItemDialog from "@/components/ItemDialog.vue";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog.vue";
 
-const items = ref<InfrastructureItem[]>([]);
-const loading = ref<boolean>(true);
-const error = ref<string | null>(null);
+// Use Composables for data fetching
+const {
+  isFetching: loading,
+  error,
+  data: items,
+  execute: refreshInfrastructure,
+} = useInfrastructure();
 
 // Dialog State
 const dialogOpen = ref(false);
@@ -27,19 +31,6 @@ const selectedItemToEdit = ref<InfrastructureItem | null>(null);
 // Delete Dialog State
 const deleteDialogOpen = ref(false);
 const itemToDelete = ref<InfrastructureItem | null>(null);
-
-const loadData = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    items.value = await fetchInfrastructure();
-  } catch (err) {
-    error.value = "Failed to load infrastructure map.";
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
-};
 
 const openAddDialog = (parentId?: number) => {
   selectedParent.value = parentId || null;
@@ -66,7 +57,7 @@ const handleSaveItem = async (item: InfrastructureItemCreate) => {
     }
     dialogOpen.value = false;
     selectedItemToEdit.value = null;
-    await loadData(); // Refresh list
+    await refreshInfrastructure(); // Refresh list
   } catch (e: any) {
     console.error(e);
     // Extract message if possible
@@ -86,15 +77,11 @@ const handleConfirmDelete = async () => {
     await deleteInfrastructureItem(itemToDelete.value.id);
     deleteDialogOpen.value = false;
     itemToDelete.value = null;
-    await loadData(); // Refresh list
+    await refreshInfrastructure(); // Refresh list
   } catch (e) {
     alert("Failed to delete item: " + e);
   }
 };
-
-onMounted(() => {
-  loadData();
-});
 </script>
 
 <template>
@@ -115,11 +102,13 @@ onMounted(() => {
 
         <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
           {{ error }}
-          <v-btn variant="text" size="small" @click="loadData">Retry</v-btn>
+          <v-btn variant="text" size="small" @click="refreshInfrastructure()"
+            >Retry</v-btn
+          >
         </v-alert>
 
         <div
-          v-else-if="items.length === 0"
+          v-else-if="items && items.length === 0"
           class="text-center pa-4 text-medium-emphasis"
         >
           No items found.
@@ -130,7 +119,7 @@ onMounted(() => {
 
         <InfrastructureTree
           v-else
-          :items="items"
+          :items="items || []"
           @delete="openDeleteDialog"
           @edit="openEditDialog"
           @add-child="openAddDialog"
