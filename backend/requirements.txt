@@ -4,3 +4,5 @@ sqlalchemy
 asyncpg
 pydantic-settings
 alembic
+cryptography
+python-dotenv

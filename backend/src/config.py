@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int = 5432
     
+    ENCRYPTION_KEY: str
+
+    
     @property
     def DATABASE_URL(self) -> str:
         # Формуємо рядок підключення для asyncpg
