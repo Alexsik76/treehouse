@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import TreeView from '@/views/TreeView.vue'
+import AboutView from '@/views/AboutView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 import ServerDetails from '@/views/ServerDetails.vue'
 
 const router = createRouter({
@@ -9,6 +12,21 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView
+    },
+    {
+      path: '/tree',
+      name: 'tree',
+      component: TreeView
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView
     },
     {
       path: '/server/:id',

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-// Main layout can go here (AppBar, Navigation)
+import Navbar from "@/components/Navbar.vue";
 </script>
 
 <template>
   <v-app>
-    <v-app-bar title="Treehouse 🌳" color="primary"> </v-app-bar>
+    <Navbar />
 
     <v-main>
       <router-view></router-view>
