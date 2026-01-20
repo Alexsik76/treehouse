@@ -10,7 +10,7 @@ import type {
   InfrastructureItem,
   InfrastructureItemCreate,
 } from "@/types/infrastructure";
-import InfrastructureTree from "@/components/InfrastructureTree.vue";
+import ServerCard from "@/components/ServerCard.vue";
 import ItemDialog from "@/components/ItemDialog.vue";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog.vue";
 
@@ -28,7 +28,7 @@ const dialogError = ref<string | null>(null);
 const selectedParent = ref<number | null>(null);
 const selectedItemToEdit = ref<InfrastructureItem | null>(null);
 
-// Delete Dialog State
+// Delete Dialog State (retaining for future use, though deleting from card might need a button)
 const deleteDialogOpen = ref(false);
 const itemToDelete = ref<InfrastructureItem | null>(null);
 
@@ -39,6 +39,7 @@ const openAddDialog = (parentId?: number) => {
   dialogOpen.value = true;
 };
 
+// Currently no edit button on card, but keeping handler
 const openEditDialog = (item: InfrastructureItem) => {
   selectedItemToEdit.value = item;
   selectedParent.value = item.parent_id || null;
@@ -49,35 +50,26 @@ const handleSaveItem = async (item: InfrastructureItemCreate) => {
   dialogError.value = null;
   try {
     if (selectedItemToEdit.value) {
-      // Update existing item
       await updateInfrastructureItem(selectedItemToEdit.value.id, item);
     } else {
-      // Create new item
       await createInfrastructureItem(item);
     }
     dialogOpen.value = false;
     selectedItemToEdit.value = null;
-    await refreshInfrastructure(); // Refresh list
+    await refreshInfrastructure();
   } catch (e: any) {
     console.error(e);
-    // Extract message if possible
     dialogError.value = e.message || "Failed to save item.";
   }
 };
 
-const openDeleteDialog = (item: InfrastructureItem) => {
-  itemToDelete.value = item;
-  deleteDialogOpen.value = true;
-};
-
 const handleConfirmDelete = async () => {
   if (!itemToDelete.value) return;
-
   try {
     await deleteInfrastructureItem(itemToDelete.value.id);
     deleteDialogOpen.value = false;
     itemToDelete.value = null;
-    await refreshInfrastructure(); // Refresh list
+    await refreshInfrastructure();
   } catch (e) {
     alert("Failed to delete item: " + e);
   }
@@ -85,53 +77,60 @@ const handleConfirmDelete = async () => {
 </script>
 
 <template>
-  <v-container class="fill-height align-start justify-center">
-    <v-card width="800" variant="outlined" class="mt-4">
-      <v-card-item>
-        <v-card-title>Infrastructure Map</v-card-title>
-        <v-card-subtitle>Live view from Backend</v-card-subtitle>
-      </v-card-item>
-
-      <v-card-text>
-        <div v-if="loading" class="d-flex justify-center pa-4">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-          ></v-progress-circular>
+  <v-container fluid class="fill-height align-start pa-6">
+    <div class="w-100">
+      <div class="d-flex justify-space-between align-center mb-6">
+        <div>
+          <h1 class="text-h4 font-weight-bold">Infrastructure</h1>
+          <p class="text-medium-emphasis">Root Servers Overview</p>
         </div>
+        <v-btn color="primary" prepend-icon="mdi-plus" @click="openAddDialog()">
+          Add Server
+        </v-btn>
+      </div>
 
-        <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-          {{ error }}
-          <v-btn variant="text" size="small" @click="refreshInfrastructure()"
-            >Retry</v-btn
-          >
-        </v-alert>
+      <div v-if="loading" class="d-flex justify-center pa-12">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+      </div>
 
-        <div
-          v-else-if="items && items.length === 0"
-          class="text-center pa-4 text-medium-emphasis"
+      <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
+        {{ error }}
+        <v-btn variant="text" size="small" @click="refreshInfrastructure()"
+          >Retry</v-btn
         >
-          No items found.
-          <v-btn variant="text" color="primary" @click="openAddDialog()"
-            >Create First Item</v-btn
-          >
-        </div>
+      </v-alert>
 
-        <InfrastructureTree
-          v-else
-          :items="items || []"
-          @delete="openDeleteDialog"
-          @edit="openEditDialog"
-          @add-child="openAddDialog"
-        />
-      </v-card-text>
-
-      <v-card-actions>
-        <v-btn block variant="tonal" color="primary" @click="openAddDialog()"
-          >Add Root Server</v-btn
+      <div
+        v-else-if="!items || items.length === 0"
+        class="text-center pa-12 text-medium-emphasis"
+      >
+        <v-icon icon="mdi-server-network-off" size="64" class="mb-4"></v-icon>
+        <div class="text-h6">No infrastructure found</div>
+        <v-btn
+          variant="text"
+          color="primary"
+          class="mt-2"
+          @click="openAddDialog()"
+          >Create First Server</v-btn
         >
-      </v-card-actions>
-    </v-card>
+      </div>
+
+      <v-row v-else>
+        <!-- Filter for root items just in case, or assume useInfrastructure (API) returns tree roots -->
+        <v-col v-for="server in items" :key="server.id" cols="12" md="6" lg="4">
+          <ServerCard
+            :server="server"
+            class="cursor-pointer"
+            @edit="openEditDialog"
+          />
+          <!-- Grid item for server card -->
+        </v-col>
+      </v-row>
+    </div>
 
     <!-- Management Dialog -->
     <ItemDialog
@@ -151,3 +150,9 @@ const handleConfirmDelete = async () => {
     />
   </v-container>
 </template>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>

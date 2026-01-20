@@ -8,6 +8,7 @@ const props = defineProps<{
   parentId?: number | null;
   itemToEdit?: InfrastructureItemCreate | null;
   errorMessage?: string | null;
+  defaultType?: InfrastructureType; // New prop
 }>();
 
 const emit = defineEmits<{
@@ -25,7 +26,7 @@ const isEditing = computed(() => !!props.itemToEdit);
 
 const localItem = ref<InfrastructureItemCreate>({
   name: "",
-  type: InfrastructureType.SERVER,
+  type: props.defaultType || InfrastructureType.SERVER,
   ip_address: "",
   dns_name: "",
   specs: {},
@@ -65,7 +66,7 @@ watch(dialog, (val) => {
       // Create Mode: Reset to default
       localItem.value = {
         name: "",
-        type: InfrastructureType.SERVER,
+        type: props.defaultType || InfrastructureType.SERVER,
         ip_address: "",
         dns_name: "",
         specs: {},
