@@ -3,7 +3,6 @@ import HomeView from '@/views/HomeView.vue'
 import TreeView from '@/views/TreeView.vue'
 import AboutView from '@/views/AboutView.vue'
 import SettingsView from '@/views/SettingsView.vue'
-import ServerDetails from '@/views/ServerDetails.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +18,11 @@ const router = createRouter({
       component: TreeView
     },
     {
+      path: "/server/:id",
+      name: "server-details",
+      component: () => import("../views/ServerDetailView.vue"),
+    },
+    {
       path: '/about',
       name: 'about',
       component: AboutView
@@ -28,12 +32,6 @@ const router = createRouter({
       name: 'settings',
       component: SettingsView
     },
-    {
-      path: '/server/:id',
-      name: 'server-details',
-      component: ServerDetails,
-      props: true
-    }
   ]
 })
 
