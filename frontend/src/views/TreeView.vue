@@ -46,6 +46,11 @@ const openEditDialog = (item: InfrastructureItem) => {
   dialogOpen.value = true;
 };
 
+const openDeleteDialog = (item: InfrastructureItem) => {
+  itemToDelete.value = item;
+  deleteDialogOpen.value = true;
+};
+
 const handleSaveItem = async (item: InfrastructureItemCreate) => {
   dialogError.value = null;
   try {
@@ -126,6 +131,7 @@ const handleConfirmDelete = async () => {
             :server="server"
             class="cursor-pointer"
             @edit="openEditDialog"
+            @delete="openDeleteDialog"
           />
           <!-- Grid item for server card -->
         </v-col>

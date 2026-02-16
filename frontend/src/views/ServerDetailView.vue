@@ -5,6 +5,7 @@ import {
   useInfrastructure,
   createInfrastructureItem,
   updateInfrastructureItem,
+  deleteInfrastructureItem,
 } from "@/services/api";
 import type {
   InfrastructureItemCreate,
@@ -12,6 +13,7 @@ import type {
 } from "@/types/infrastructure";
 import ServerCard from "@/components/ServerCard.vue";
 import ItemDialog from "@/components/ItemDialog.vue";
+import DeleteConfirmDialog from "@/components/DeleteConfirmDialog.vue";
 import { getOsIcon } from "@/utils/icons";
 import { findItemById } from "@/utils/tree";
 
@@ -107,8 +109,28 @@ const handleSaveItem = async (item: InfrastructureItemCreate) => {
     dialogOpen.value = false;
     await refreshInfrastructure();
   } catch (e: any) {
-    console.error(e);
     dialogError.value = e.message || "Failed to save item.";
+  }
+};
+
+// Delete Dialog State
+const deleteDialogOpen = ref(false);
+const itemToDelete = ref<InfrastructureItem | null>(null);
+
+const openDeleteDialog = (item: InfrastructureItem) => {
+  itemToDelete.value = item;
+  deleteDialogOpen.value = true;
+};
+
+const handleConfirmDelete = async () => {
+  if (!itemToDelete.value) return;
+  try {
+    await deleteInfrastructureItem(itemToDelete.value.id);
+    deleteDialogOpen.value = false;
+    itemToDelete.value = null;
+    await refreshInfrastructure();
+  } catch (e: any) {
+    alert("Failed to delete item: " + e.message);
   }
 };
 </script>
@@ -234,7 +256,11 @@ const handleSaveItem = async (item: InfrastructureItemCreate) => {
           lg="4"
         >
           <!-- Reuse ServerCard - it handles VMs/Containers too -->
-          <ServerCard :server="child" @edit="openEditDialog" />
+          <ServerCard
+            :server="child"
+            @edit="openEditDialog"
+            @delete="openDeleteDialog"
+          />
         </v-col>
       </v-row>
     </v-container>
@@ -273,6 +299,13 @@ const handleSaveItem = async (item: InfrastructureItemCreate) => {
       :default-type="typeFilter"
       @update:error-message="dialogError = $event"
       @save="handleSaveItem"
+    />
+
+    <!-- Delete Confirmation Dialog -->
+    <DeleteConfirmDialog
+      v-model="deleteDialogOpen"
+      :item="itemToDelete"
+      @confirm="handleConfirmDelete"
     />
   </div>
 </template>

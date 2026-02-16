@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "edit", item: InfrastructureItem): void;
+  (e: "delete", item: InfrastructureItem): void;
 }>();
 
 const router = useRouter();
@@ -23,6 +24,11 @@ const toggleFlip = () => {
 const handleEditClick = (event: Event) => {
   event.stopPropagation(); // Prevent flip
   emit("edit", props.server);
+};
+
+const handleDeleteClick = (event: Event) => {
+  event.stopPropagation(); // Prevent flip
+  emit("delete", props.server);
 };
 
 const navigateToDetail = (type: "vm" | "container") => {
@@ -197,6 +203,16 @@ const lastUpdate = computed(() => {
             </p>
 
             <div class="d-flex justify-end mt-auto">
+              <v-btn
+                variant="tonal"
+                size="small"
+                color="error"
+                prepend-icon="mdi-delete"
+                class="mr-2"
+                @click="handleDeleteClick"
+              >
+                Delete
+              </v-btn>
               <v-btn
                 variant="tonal"
                 size="small"
