@@ -36,8 +36,8 @@ async def check_db_connection():
     try:
         async with engine.connect() as conn:
             result = await conn.execute(text("SELECT 1"))
-            logger.info(f"✅ Database connected! Result: {result.scalar()}")
+            logger.info(f"Database connected! Result: {result.scalar()}")
             return True
     except Exception as e:
-        logger.error(f"❌ Database connection failed: {e}")
+        logger.error(f"Database connection failed: {e}")
         return False

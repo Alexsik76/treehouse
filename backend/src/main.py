@@ -11,7 +11,7 @@ from src.database import Base, check_db_connection, engine, get_db
 
 # 2. ДОДАНО: Імпорт моделі, щоб вона зареєструвалася в Base.metadata
 # Без цього create_all створить порожню базу
-from src.models.infrastructure import InfrastructureItem #noqa
+from src.models.infrastructure import InfrastructureItem  #noqa
 from src.routers import infrastructure
 
 # Configure Logging
@@ -28,20 +28,20 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # This code runs on startup
-    logger.info("🚀 Starting Treehouse API...")
+    logger.info("Starting Treehouse API...")
 
     # 3. ДОДАНО: Примусове створення таблиць при старті
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        logger.info("✅ Database tables verified/created.")
+        logger.info("Database tables verified/created.")
 
     if not await check_db_connection():
-        logger.error("❌ Failed to connect to database on startup!")
+        logger.error("Failed to connect to database on startup!")
     
     yield
     
     # This code runs on shutdown
-    logger.info("🛑 Shutting down...")
+    logger.info("Shutting down...")
     await engine.dispose()
 
 app = FastAPI(title="Treehouse API", lifespan=lifespan)
